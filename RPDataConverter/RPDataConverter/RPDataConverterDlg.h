@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "MapData.h"
 
 // CRPDataConverterDlg 대화 상자
 class CRPDataConverterDlg : public CDialogEx
@@ -34,13 +34,16 @@ protected:
 public:
 	afx_msg void OnBnClickedButton1();
 	CString GetUserSelectFolder(CString strMsg);
-	void GetFileList1(CString strFolder);
+	void GetFileList(CString strFolder);
 
 
 private:
 	CString strPathName1;
-	CCheckListBox m_CheckListBox;
+	CMapFile* m_pMapFile;
+	
 
 public:
-	//CListBox m_ListBox;
+	
+	CListCtrl m_ListControl;
+	afx_msg void OnBnClickedButton2();
 };

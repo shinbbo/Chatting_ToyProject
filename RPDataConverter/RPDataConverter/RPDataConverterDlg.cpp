@@ -60,8 +60,8 @@ CRPDataConverterDlg::CRPDataConverterDlg(CWnd* pParent /*=nullptr*/)
 void CRPDataConverterDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	//DDX_Control(pDX, IDC_LIST1, m_ListBox);
-	DDX_Control(pDX, IDC_LIST1, m_CheckListBox);
+
+	DDX_Control(pDX, IDC_LIST1, m_ListControl);
 }
 
 BEGIN_MESSAGE_MAP(CRPDataConverterDlg, CDialogEx)
@@ -70,6 +70,8 @@ BEGIN_MESSAGE_MAP(CRPDataConverterDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	
 	ON_BN_CLICKED(IDC_BUTTON1, &CRPDataConverterDlg::OnBnClickedButton1)
+	
+	ON_BN_CLICKED(IDC_BUTTON2, &CRPDataConverterDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
@@ -105,7 +107,7 @@ BOOL CRPDataConverterDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
-	//m_CheckListBox.SubclassDlgItem(IDC_LIST1, this);
+	m_pMapFile = new CMapFile;
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -168,13 +170,15 @@ void CRPDataConverterDlg::OnBnClickedButton1()
 	strPathName1 = GetUserSelectFolder(_T("선택 파일"));
 
 
-	if (strPathName1.GetLength() == 0)
+	if (0 == strPathName1.GetLength())
+	{
 		return;
+	}
+		
 
 	SetDlgItemText(IDC_EDIT1, strPathName1);
 
-
-	GetFileList1(strPathName1);
+	GetFileList(strPathName1);
 
 }
 
@@ -194,26 +198,31 @@ CString CRPDataConverterDlg::GetUserSelectFolder(CString strMsg)
 
 	pidlBrowse = ::SHBrowseForFolder(&BrInfo);
 
-	if (pidlBrowse != NULL)
+	if (NULL != pidlBrowse)
 	{
 		::SHGetPathFromIDList(pidlBrowse, pszPathname);
 		strUploadDir = pszPathname;  // 폴더 경로
 	}
 	else
+	{
 		strUploadDir = _T("");
-
+	}
+		
 	return strUploadDir;
 }
 
 
-void CRPDataConverterDlg::GetFileList1(CString strFolder)
+void CRPDataConverterDlg::GetFileList(CString strFolder)
 {
 	CFileFind file;
-	BOOL b = file.FindFile(strFolder + _T("\\*.*"));	     	// 모든 확장자를 다 사용.	
-	//	CString strMusicFilter = ".MP3.OGG.WMA.WAV";			// 필터링 하고 싶으면 이렇게 쓰면 됨
+	BOOL b = file.FindFile(strFolder + _T("\\*.*"));	     			// 모든 확장자를 다 사용.	
 	CString strFolderItem, strFileExt, strTempString;
+	BOOL Check;
+	int num = 0;
 
-	if (false == b)
+	m_ListControl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES | LVS_EX_GRIDLINES);
+
+	if (FALSE == b)
 	{
 		file.Close();
 		return;
@@ -222,31 +231,45 @@ void CRPDataConverterDlg::GetFileList1(CString strFolder)
 	while (b)
 	{
 		b = file.FindNextFile();
-		if (file.IsDirectory() && !file.IsDots())			// 디렉토리 발견시 
+		if (TRUE == file.IsDirectory() && FALSE == file.IsDots())			// 디렉토리 발견시 
 		{
 			strFolderItem = file.GetFilePath();
-			GetFileList1(strFolderItem);						// 하위폴더를 검색하기 위해 재귀호출 발생  
+			GetFileList(strFolderItem);						// 하위폴더를 검색하기 위해 재귀호출 발생  
 		}
 		strFolderItem = file.GetFilePath();
 		strFileExt = strFolderItem.Mid(strFolderItem.ReverseFind('.'));		// 확장자만 추출한다. 
 
-		if (!file.IsDots())									// 파일 탐색 필터 정의에따라 해당 StringList에 추가
+		if (FALSE == file.IsDots())									// 파일 탐색 필터 정의에따라 해당 StringList에 추가
 		{
 			strFileExt.MakeUpper();							// strFileExt 에는 확장자 (.EXE 형태) 가 들어옴. 비교위해 대문자화 함
-			if (file.IsDirectory()) continue;				// 폴더만 남는 경우는 넣으면 안됨 
+			if (TRUE == file.IsDirectory())
+			{
+				continue;				// 폴더만 남는 경우는 넣으면 안됨 
+			}
 
 			strFolderItem.Replace(strPathName1, _T(""));
 
+			m_ListControl.InsertItem(num, strFolderItem);
+		}
+	}
+}
 
-			//m_ListBox.AddString(strFolderItem);
-			
 
-			
-			
-			//int index = m_ListBox.InsertString(-1, strFolderItem);
-			int idx =  m_CheckListBox.InsertString(-1, strFolderItem);
-			
+void CRPDataConverterDlg::OnBnClickedButton2()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int nCount = m_ListControl.GetItemCount();
 
+	for (int i = 0; i < nCount; i++)
+	{
+		BOOL Check = m_ListControl.GetCheck(i);
+		if (TRUE == Check)
+		{
+			CString temp = m_ListControl.GetItemText(i, 0);
+			m_pMapFile->FileOpen(strPathName1, temp);
+
+			//temp.Format(_T("%s seq가 선택됨"), temp);
+			//AfxMessageBox(temp);
 		}
 	}
 }
