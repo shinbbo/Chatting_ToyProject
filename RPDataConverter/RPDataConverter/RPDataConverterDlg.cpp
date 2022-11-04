@@ -258,6 +258,7 @@ void CRPDataConverterDlg::GetFileList(CString strFolder)
 void CRPDataConverterDlg::OnBnClickedButton2()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CStringArray temp;
 	int nCount = m_ListControl.GetItemCount();
 
 	for (int i = 0; i < nCount; i++)
@@ -265,11 +266,24 @@ void CRPDataConverterDlg::OnBnClickedButton2()
 		BOOL Check = m_ListControl.GetCheck(i);
 		if (TRUE == Check)
 		{
-			CString temp = m_ListControl.GetItemText(i, 0);
-			m_pMapFile->FileOpen(strPathName1, temp);
+			temp.Add(m_ListControl.GetItemText(i, 0));
 
 			//temp.Format(_T("%s seq가 선택됨"), temp);
 			//AfxMessageBox(temp);
 		}
 	}
+
+
+	for (int i = 0; i < temp.GetSize(); i++)
+	{
+		m_pMapFile->FileOpen(strPathName1, temp.GetAt(i));
+		CString FileName = temp.GetAt(i);
+
+		//도로 객체 수 & 진입 도로 개수 & 진출 도로 개수 & 도로 내 차로 개수
+		UINT NumOfRoad = m_pMapFile->m_vGridInfo[i].iNumOfRoad;
+		int8_t PrevRoadNum = m_pMapFile->m_vRoadDataInfo[i].nPrevRoadNum;
+		int8_t NextRoadNum = m_pMapFile->m_vRoadDataInfo[i].nNextRoadNum;
+		int8_t LaneNum = m_pMapFile->m_vRoadDataInfo[i].nLaneNum;
+	}
+
 }
