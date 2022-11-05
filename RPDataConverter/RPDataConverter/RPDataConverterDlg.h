@@ -4,6 +4,7 @@
 
 #pragma once
 #include "MapData.h"
+#include "Result.h"
 
 // CRPDataConverterDlg 대화 상자
 class CRPDataConverterDlg : public CDialogEx

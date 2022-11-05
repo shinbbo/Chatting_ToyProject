@@ -284,6 +284,13 @@ void CRPDataConverterDlg::OnBnClickedButton2()
 		int8_t PrevRoadNum = m_pMapFile->m_vRoadDataInfo[i].nPrevRoadNum;
 		int8_t NextRoadNum = m_pMapFile->m_vRoadDataInfo[i].nNextRoadNum;
 		int8_t LaneNum = m_pMapFile->m_vRoadDataInfo[i].nLaneNum;
+
+		
+		//str.Format(_T("%s"), NumOfRoad);
+		//dlg.m_listctlResult.InsertItem(0, str);
 	}
 
+
+	CResult dlg(m_pMapFile);
+	dlg.DoModal();
 }

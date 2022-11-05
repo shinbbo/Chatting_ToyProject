@@ -16,9 +16,11 @@ public:
 	std::vector< GridInfo> m_vGridInfo;							//그리드 정보 vector 저장
 	std::vector< RoadDataInfo> m_vRoadDataInfo;		//도로 데이터 vector 저장
 	std::vector< LaneDataInfo>m_vLaneDataInfo;			//차로 데이터 vector 저장
-
+	std::vector<CString> getGridIdList();
 
 private:
 	FILE* fp;
 	MapData m_MapData;
+
+	std::vector<CString> m_vGridID;
 };

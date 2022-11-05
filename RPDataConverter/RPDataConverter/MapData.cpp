@@ -10,12 +10,14 @@ CMapFile::CMapFile()
 }
 CMapFile::~CMapFile()
 {
-
+	m_vGridID.clear();
+	
 }
 
 void CMapFile::FileOpen(CString strPathName1, CString path)
 {
 	CString filePath = strPathName1 + path;
+	m_vGridID.push_back(path);
 
 	_wfopen_s(&fp, filePath, L"rb");
 	if (NULL == fp)
@@ -182,4 +184,10 @@ void CMapFile::MapDataRead(FILE* fp)
 			fread(&m_MapData.stLaneObjData.pstLaneData[i].pstRigthLaneData[j], sizeof(RigthLaneData), 1, fp);
 		}
 	}
+}
+
+
+std::vector<CString> CMapFile::getGridIdList()
+{
+	return m_vGridID;
 }
