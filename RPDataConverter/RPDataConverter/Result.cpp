@@ -29,14 +29,26 @@ void CResult::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CResult, CDialogEx)
+	ON_BN_CLICKED(IDC_BUTTON_MERGE, &CResult::OnBnClickedButtonMerge)
 END_MESSAGE_MAP()
 
 BOOL CResult::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
-	PrintResult();
 
+	CRect rect;
+	m_listctlResult.GetClientRect(&rect);
 
+	m_listctlResult.InsertColumn(0, _T("파일 이름"), LVCFMT_CENTER, 120);
+	m_listctlResult.InsertColumn(1, _T("도로 데이터"), LVCFMT_CENTER, rect.Width() - 250);
+	m_listctlResult.InsertColumn(2, _T("차로 데이터"), LVCFMT_CENTER, rect.Width() - 250);
+
+	m_listctlResult.SetExtendedStyle(LVS_EX_GRIDLINES);
+
+	if (FALSE == PrintResult())
+	{
+		return FALSE;
+	}
 
 	return TRUE;
 }
@@ -45,14 +57,31 @@ BOOL CResult::OnInitDialog()
 BOOL CResult::PrintResult()
 {
 	std::vector<CString> vGridID;
+	std::vector< GridInfo> vGridInfo;	
+
 	vGridID = m_pCMapFile->getGridIdList();
+	vGridInfo = m_pCMapFile->getGridInfo();
+	
 	CString str;
 
 	for (int i = 0; i < vGridID.size(); i++)
 	{
-		//str.Format(_T("%s"), vGridID[i]);
-		m_listctlResult.InsertItem(0, vGridID[i]);
+		m_listctlResult.InsertItem(i, vGridID[i]);
+
+		str.Format(_T("%d"), vGridInfo[i].iNumOfRoad);
+		m_listctlResult.SetItemText(i, 1, str);
+
+		str.Format(_T("%d"), vGridInfo[i].iNumOfLane);
+		m_listctlResult.SetItemText(i, 2, str);
 	}
 
 	return TRUE;
+}
+
+
+void CResult::OnBnClickedButtonMerge()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CFileMerge dlg(m_pCMapFile);
+	dlg.DoModal();
 }

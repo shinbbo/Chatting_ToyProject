@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "MapData.h"
+#include "FileAdd.h"
 
 // CResult 대화 상자
 
@@ -27,4 +28,6 @@ public:
 private:
 	CMapFile* m_pCMapFile;
 	CListCtrl m_listctlResult;
+public:
+	afx_msg void OnBnClickedButtonMerge();
 };

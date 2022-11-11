@@ -175,7 +175,6 @@ void CRPDataConverterDlg::OnBnClickedButton1()
 		return;
 	}
 		
-
 	SetDlgItemText(IDC_EDIT1, strPathName1);
 
 	GetFileList(strPathName1);
@@ -202,6 +201,7 @@ CString CRPDataConverterDlg::GetUserSelectFolder(CString strMsg)
 	{
 		::SHGetPathFromIDList(pidlBrowse, pszPathname);
 		strUploadDir = pszPathname;  // 폴더 경로
+		strUploadDir += _T("\\");
 	}
 	else
 	{
@@ -215,7 +215,7 @@ CString CRPDataConverterDlg::GetUserSelectFolder(CString strMsg)
 void CRPDataConverterDlg::GetFileList(CString strFolder)
 {
 	CFileFind file;
-	BOOL b = file.FindFile(strFolder + _T("\\*.*"));	     			// 모든 확장자를 다 사용.	
+	BOOL b = file.FindFile(strFolder + _T("*.*"));	     			// 모든 확장자를 다 사용.	
 	CString strFolderItem, strFileExt, strTempString;
 	BOOL Check;
 	int num = 0;
@@ -267,9 +267,6 @@ void CRPDataConverterDlg::OnBnClickedButton2()
 		if (TRUE == Check)
 		{
 			temp.Add(m_ListControl.GetItemText(i, 0));
-
-			//temp.Format(_T("%s seq가 선택됨"), temp);
-			//AfxMessageBox(temp);
 		}
 	}
 
@@ -277,19 +274,7 @@ void CRPDataConverterDlg::OnBnClickedButton2()
 	for (int i = 0; i < temp.GetSize(); i++)
 	{
 		m_pMapFile->FileOpen(strPathName1, temp.GetAt(i));
-		CString FileName = temp.GetAt(i);
-
-		//도로 객체 수 & 진입 도로 개수 & 진출 도로 개수 & 도로 내 차로 개수
-		UINT NumOfRoad = m_pMapFile->m_vGridInfo[i].iNumOfRoad;
-		int8_t PrevRoadNum = m_pMapFile->m_vRoadDataInfo[i].nPrevRoadNum;
-		int8_t NextRoadNum = m_pMapFile->m_vRoadDataInfo[i].nNextRoadNum;
-		int8_t LaneNum = m_pMapFile->m_vRoadDataInfo[i].nLaneNum;
-
-		
-		//str.Format(_T("%s"), NumOfRoad);
-		//dlg.m_listctlResult.InsertItem(0, str);
 	}
-
 
 	CResult dlg(m_pMapFile);
 	dlg.DoModal();
