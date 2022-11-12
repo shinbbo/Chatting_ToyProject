@@ -17,7 +17,7 @@ public:
 #endif
 
 public:
-	void FileMerge(TCHAR* szBuffer);
+	BOOL FileMerge(TCHAR* szBuffer);
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
@@ -30,4 +30,5 @@ private:
 	CMapFile* m_pMapFile;
 	CEdit m_Edit;
 	FILE* fp;
+	MapData* m_pData;
 };

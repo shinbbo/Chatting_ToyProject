@@ -270,10 +270,11 @@ void CRPDataConverterDlg::OnBnClickedButton2()
 		}
 	}
 
+	m_pMapFile->setGridCnt(temp.GetSize());
 
 	for (int i = 0; i < temp.GetSize(); i++)
 	{
-		m_pMapFile->FileOpen(strPathName1, temp.GetAt(i));
+		m_pMapFile->FileOpen(strPathName1, temp.GetAt(i), i);
 	}
 
 	CResult dlg(m_pMapFile);
