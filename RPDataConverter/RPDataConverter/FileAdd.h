@@ -31,4 +31,5 @@ private:
 	CEdit m_Edit;
 	FILE* fp;
 	MapData* m_pData;
+	MapHeader m_MapHeader;
 };

@@ -40,18 +40,51 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 	vGridID = m_pMapFile->getGridIdList();
 
 	fp = m_pMapFile->getFilePoint();
-	CString a = szBuffer;
-	_wfopen_s(&fp, a + L"\\merge1.bin", L"wb");
+	CString filepath = szBuffer;
+	_wfopen_s(&fp, filepath + L"\\merge.bin", L"wb");
 	if (NULL == fp)
 	{
 		return FALSE;
 	}
 
+	memcpy(m_MapHeader.stMapInfo.acVersion, "ver1.0", sizeof(m_MapHeader.stMapInfo.acVersion));
+	fwrite(&m_MapHeader.stMapInfo.acVersion, sizeof(m_MapHeader.stMapInfo.acVersion), 1, fp);
+
+	printf("Version = %s\n", m_MapHeader.stMapInfo.acVersion);
+	int Cur = ftell(fp);
+
+	fseek(fp, Cur + sizeof(UINT), SEEK_SET);
+	m_MapHeader.stMapInfo.iGridStartID = 20180805;
+	fwrite(&m_MapHeader.stMapInfo.iGridStartID, sizeof(UINT), 1, fp);
+
+	m_MapHeader.stMapInfo.iGridNumOfx = 0;
+	fwrite(&m_MapHeader.stMapInfo.iGridNumOfx, sizeof(UINT), 1, fp);
+
+	m_MapHeader.stMapInfo.iGridNumOfy = 0;
+	fwrite(&m_MapHeader.stMapInfo.iGridNumOfy, sizeof(UINT), 1, fp);
+
+	m_MapHeader.stMapInfo.iNumOfGrid = 0;
+	fwrite(&m_MapHeader.stMapInfo.iNumOfGrid, sizeof(UINT), 1, fp);
+
+	m_MapHeader.stMapInfo.iReserved = 0;
+	fwrite(&m_MapHeader.stMapInfo.iReserved, sizeof(UINT), 1, fp);
+
+
 	m_pData = (MapData*)malloc(sizeof(MapData) * vGridID.size());
 	m_pData = m_pMapFile->getMapData();
 
+	int GridDataCur = ftell(fp);
+	m_MapHeader.pstGridTable = (GridTable*)malloc(sizeof(GridTable) * vGridID.size());
+
+	int GridTableSize = sizeof(GridTable);
+	int FileCnt = vGridID.size();
+	fseek(fp, GridTableSize * FileCnt, SEEK_CUR);
+
 	for (int num = 0; num < vGridID.size(); num++)
 	{
+		
+		m_MapHeader.pstGridTable[num].iStart = ftell(fp);
+
 		fwrite(&m_pData[num].stGridInfo, sizeof(GridInfo), 1, fp);
 
 		//객체 종류 테이블 read
@@ -60,13 +93,8 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 		//객체 종류 정보 read
 		fwrite(&m_pData[num].stRoadObjData.stObjTypeInfo, sizeof(ObjTypeInfo), 1, fp);
 
-
 		//도로객체의 수
 		UINT NumOfRoad = m_pData[num].stGridInfo.iNumOfRoad;
-
-		//도로 옵셋 테이블 동적 할당
-		//m_pData[num].stRoadObjData.pstRoadOffsetTable = (RoadOffsetTable*)malloc(sizeof(RoadOffsetTable) * NumOfRoad);
-		//memset(m_pData[num].stRoadObjData.pstRoadOffsetTable, 0, sizeof(RoadOffsetTable) * NumOfRoad);
 
 		for (int i = 0; i < NumOfRoad; i++)
 		{
@@ -74,8 +102,6 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 			fwrite(&m_pData[num].stRoadObjData.pstRoadOffsetTable[i], sizeof(RoadOffsetTable), 1, fp);
 		}
 
-		//m_pData[num].stRoadObjData.pstRoadData = (RoadData*)malloc(sizeof(RoadData) * NumOfRoad);
-		//memset(m_pData[num].stRoadObjData.pstRoadData, 0, sizeof(RoadData) * NumOfRoad);
 
 		for (int i = 0; i < NumOfRoad; i++)
 		{
@@ -85,9 +111,6 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 			//진입 도로 개수
 			int8_t PrevRoadNum = m_pData[num].stRoadObjData.pstRoadData[i].stRoadDataInfo.nPrevRoadNum;
 
-			//진입 도로 연결성 데이터 동적할당
-			//m_pData[num].stRoadObjData.pstRoadData[i].pstPrevConnectData = (PrevConnectData*)malloc(sizeof(PrevConnectData) * PrevRoadNum);
-			//memset(m_pData[num].stRoadObjData.pstRoadData[i].pstPrevConnectData, 0, sizeof(PrevConnectData) * PrevRoadNum);
 
 			for (int j = 0; j < PrevRoadNum; j++)
 			{
@@ -98,9 +121,6 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 			//진출 도로 개수
 			int8_t NextRoadNum = m_pData[num].stRoadObjData.pstRoadData[i].stRoadDataInfo.nNextRoadNum;
 
-			//진출 도로 연결성 데이터 동적할당
-			//m_pData[num].stRoadObjData.pstRoadData[i].pstNextConnectData = (NextConnectData*)malloc(sizeof(NextConnectData) * NextRoadNum);
-			//memset(m_pData[num].stRoadObjData.pstRoadData[i].pstNextConnectData, 0, sizeof(NextConnectData) * NextRoadNum);
 
 			for (int j = 0; j < NextRoadNum; j++)
 			{
@@ -111,9 +131,6 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 			//도로 내 차로 개수
 			int8_t LaneNum = m_pData[num].stRoadObjData.pstRoadData[i].stRoadDataInfo.nLaneNum;
 
-			//도로 내 차로 ID 리스트 동적할당
-			//m_pData[num].stRoadObjData.pstRoadData[i].pstRoadIDList = (RoadIDList*)malloc(sizeof(RoadIDList) * LaneNum);
-			//memset(m_pData[num].stRoadObjData.pstRoadData[i].pstRoadIDList, 0, sizeof(RoadIDList) * LaneNum);
 
 			for (int j = 0; j < LaneNum; j++)
 			{
@@ -128,8 +145,7 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 
 		//차로 옵셋 테이블 개수
 		UINT NumOfLane = m_pData[num].stGridInfo.iNumOfLane;
-		//m_pData[num].stLaneObjData.pstLaneOffsetTable = (LaneOffsetTable*)malloc(sizeof(LaneOffsetTable) * NumOfLane);
-		//memset(m_pData[num].stLaneObjData.pstLaneOffsetTable, 0, sizeof(LaneOffsetTable) * NumOfLane);
+
 
 		for (int i = 0; i < NumOfLane; i++)
 		{
@@ -137,54 +153,40 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 			fwrite(&m_pData[num].stLaneObjData.pstLaneOffsetTable[i], sizeof(LaneOffsetTable), 1, fp);
 		}
 
-		//m_pData[num].stLaneObjData.pstLaneData = (LaneData*)malloc(sizeof(LaneData) * NumOfLane);
-		//memset(m_pData[num].stLaneObjData.pstLaneData, 0, sizeof(LaneData) * NumOfLane);
 
 		for (int i = 0; i < NumOfLane; i++)
 		{
-			//차로 데이터 시작 위치로 fseek
-			//fseek(fp, m_pData[num].stLaneObjData.pstLaneOffsetTable[i].iStart, SEEK_SET);
-
 			//차로 데이터 write 
-			int size = ftell(fp);
+			//int size = ftell(fp);
 			fwrite(&m_pData[num].stLaneObjData.pstLaneData[i].stLaneDataInfo, sizeof(LaneDataInfo), 1, fp);
 
 			//진입 차로 연결성 데이터 개수
 			int8_t PrevLaneNum = m_pData[num].stLaneObjData.pstLaneData[i].stLaneDataInfo.nPrevLaneNum;
 
-			//진입 차로 연결성 데이터 동적할당
-			//m_pData[num].stLaneObjData.pstLaneData[i].pstPrevLaneConnectData = (PrevLaneConnectData*)malloc(sizeof(PrevLaneConnectData) * PrevLaneNum);
-			//memset(m_pData[num].stLaneObjData.pstLaneData[i].pstPrevLaneConnectData, 0, sizeof(PrevLaneConnectData) * PrevLaneNum);
 
 			for (int j = 0; j < PrevLaneNum; j++)
 			{
-				size = ftell(fp);
+				//size = ftell(fp);
 				fwrite(&m_pData[num].stLaneObjData.pstLaneData[i].pstPrevLaneConnectData[j], sizeof(PrevLaneConnectData), 1, fp);
 			}
 
 			//진출 차로 연결성 데이터 개수
 			int8_t NextLaneNum = m_pData[num].stLaneObjData.pstLaneData[i].stLaneDataInfo.nNextLaneNum;
 
-			//진출 차로 연결성 데이터 동적할당
-			//m_pData[num].stLaneObjData.pstLaneData[i].pstNextLaneConnectData = (NextLaneConnectData*)malloc(sizeof(NextLaneConnectData) * NextLaneNum);
-			//memset(m_pData[num].stLaneObjData.pstLaneData[i].pstNextLaneConnectData, 0, sizeof(NextLaneConnectData) * NextLaneNum);
 
 			for (int j = 0; j < NextLaneNum; j++)
 			{
-				size = ftell(fp);
+				//size = ftell(fp);
 				fwrite(&m_pData[num].stLaneObjData.pstLaneData[i].pstNextLaneConnectData[j], sizeof(NextLaneConnectData), 1, fp);
 			}
 
 			//좌측 차선ID 개수
 			int8_t LeftLineNum = m_pData[num].stLaneObjData.pstLaneData[i].stLaneDataInfo.nLeftLineNum;
 
-			//좌측 차선ID 동적할당
-			//m_pData[num].stLaneObjData.pstLaneData[i].pstLeftLaneData = (LeftLaneData*)malloc(sizeof(LeftLaneData) * LeftLineNum);
-			//memset(m_pData[num].stLaneObjData.pstLaneData[i].pstLeftLaneData, 0, sizeof(LeftLaneData) * LeftLineNum);
 
 			for (int j = 0; j < LeftLineNum; j++)
 			{
-				size = ftell(fp);
+				//size = ftell(fp);
 				fwrite(&m_pData[num].stLaneObjData.pstLaneData[i].pstLeftLaneData[j], sizeof(LeftLaneData), 1, fp);
 			}
 
@@ -192,20 +194,33 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 			//우측 차선ID 개수
 			int8_t RightLineNum = m_pData[num].stLaneObjData.pstLaneData[i].stLaneDataInfo.nRightLineNum;
 
-			//우측 차선ID 동적할당
-			//m_pData[num].stLaneObjData.pstLaneData[i].pstRigthLaneData = (RigthLaneData*)malloc(sizeof(RigthLaneData) * RightLineNum);
-			//memset(m_pData[num].stLaneObjData.pstLaneData[i].pstRigthLaneData, 0, sizeof(RigthLaneData) * RightLineNum);
 
 			for (int j = 0; j < RightLineNum; j++)
 			{
-				size = ftell(fp);
+				//size = ftell(fp);
 				fwrite(&m_pData[num].stLaneObjData.pstLaneData[i].pstRigthLaneData[j], sizeof(RigthLaneData), 1, fp);
 			}
 		}
+		int ofsCur = ftell(fp);
+		m_MapHeader.pstGridTable[num].iSize = ofsCur - m_MapHeader.pstGridTable[num].iStart;
+		
 	}
 
+
+	fseek(fp, GridDataCur, SEEK_SET);
+	for (int i = 0; i < FileCnt; i++)
+	{
+		fwrite(&m_MapHeader.pstGridTable[i].iStart, sizeof(UINT), 1, fp);
+		fwrite(&m_MapHeader.pstGridTable[i].iSize, sizeof(UINT), 1, fp);
+	}
+	
+
+	m_MapHeader.stMapInfo.iOffsetMapData = ftell(fp);
+	fseek(fp, Cur, SEEK_SET);
+	fwrite(&m_MapHeader.stMapInfo.iOffsetMapData, sizeof(UINT), 1, fp);
+
 	fclose(fp);
-	return true;
+	return TRUE;
 }
 
 void CFileMerge::OnBnClickedButtonSave()
