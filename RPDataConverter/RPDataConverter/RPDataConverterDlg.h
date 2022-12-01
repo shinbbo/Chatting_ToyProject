@@ -47,4 +47,11 @@ public:
 	
 	CListCtrl m_ListControl;
 	afx_msg void OnBnClickedButton2();
+	afx_msg void OnNMDblclkList(NMHDR *pNMHDR, LRESULT *pResult);
+	// IDC_LIST2
+	CListCtrl m_ListSec;
+	// IDC_LIST3
+	CListBox m_ListBox;
+	afx_msg void OnLvnItemchangedList(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnLbnDblclkList();
 };

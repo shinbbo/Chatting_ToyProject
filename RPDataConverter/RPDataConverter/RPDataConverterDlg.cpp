@@ -32,6 +32,8 @@ public:
 // 구현입니다.
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnNMDblclkList(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -44,6 +46,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	
 END_MESSAGE_MAP()
 
 
@@ -62,6 +65,7 @@ void CRPDataConverterDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 
 	DDX_Control(pDX, IDC_LIST1, m_ListControl);
+	DDX_Control(pDX, IDC_LIST3, m_ListBox);
 }
 
 BEGIN_MESSAGE_MAP(CRPDataConverterDlg, CDialogEx)
@@ -72,6 +76,9 @@ BEGIN_MESSAGE_MAP(CRPDataConverterDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CRPDataConverterDlg::OnBnClickedButton1)
 	
 	ON_BN_CLICKED(IDC_BUTTON2, &CRPDataConverterDlg::OnBnClickedButton2)
+	ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CRPDataConverterDlg::OnNMDblclkList)
+	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, &CRPDataConverterDlg::OnLvnItemchangedList)
+	ON_LBN_DBLCLK(IDC_LIST3, &CRPDataConverterDlg::OnLbnDblclkList)
 END_MESSAGE_MAP()
 
 
@@ -255,28 +262,141 @@ void CRPDataConverterDlg::GetFileList(CString strFolder)
 }
 
 
+//Read 버튼
 void CRPDataConverterDlg::OnBnClickedButton2()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CStringArray temp;
-	int nCount = m_ListControl.GetItemCount();
+	CString str;
 
+	int nCount = m_ListControl.GetItemCount();
+	int DataCnt = m_ListBox.GetCount();
+	if (DataCnt <= 0)
+	{
+		AfxMessageBox(_T("데이터가 없습니다."));
+	}
+	
+	for (int i = 0; i < DataCnt; i++)
+	{
+		m_ListBox.GetText(i, str);
+		temp.Add(str);
+	}
+
+	/*
 	for (int i = 0; i < nCount; i++)
 	{
 		BOOL Check = m_ListControl.GetCheck(i);
 		if (TRUE == Check)
 		{
-			temp.Add(m_ListControl.GetItemText(i, 0));
+			str = m_ListControl.GetItemText(i, 0);
+			temp.Add(str);
 		}
-	}
+	}*/
 
-	m_pMapFile->setGridCnt(temp.GetSize());
+	int SelDataCnt = temp.GetSize();
+	m_pMapFile->setGridCnt(SelDataCnt);
 
-	for (int i = 0; i < temp.GetSize(); i++)
+	for (int i = 0; i < SelDataCnt; i++)
 	{
 		m_pMapFile->FileOpen(strPathName1, temp.GetAt(i), i);
 	}
 
 	CResult dlg(m_pMapFile);
 	dlg.DoModal();
+}
+
+
+
+
+void CRPDataConverterDlg::OnNMDblclkList(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+
+	CString FileName;
+	int cnt = m_ListControl.GetItemCount();
+	for (int i = 0; i < cnt; i++)
+	{
+		BOOL Check = m_ListControl.GetCheck(i);
+		if (TRUE == Check)
+		{
+			FileName = m_ListControl.GetItemText(i, 0);
+			UINT idx = m_ListBox.FindStringExact(-1, FileName);
+			if (idx != LB_ERR)
+			{
+				m_ListBox.DeleteString(idx);
+			}
+			else
+			{
+				m_ListBox.InsertString(-1, FileName);
+			}
+		}
+	}
+
+
+	*pResult = 0;
+}
+
+
+void CRPDataConverterDlg::OnLvnItemchangedList(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMLISTVIEW pNMLV = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString str;
+	if (pNMLV->uChanged == LVIF_STATE)
+	{
+		if ((pNMLV->uOldState & 0x1000) && (pNMLV->uNewState & 0x2000))
+		{
+			int cnt = m_ListControl.GetItemCount();
+			for (int i = 0; i < cnt; i++)
+			{
+				BOOL Check = m_ListControl.GetCheck(i);
+				if (TRUE == Check)
+				{
+					str = m_ListControl.GetItemText(i, 0);
+					UINT idx = m_ListBox.FindStringExact(-1, str);
+					if (idx != LB_ERR)
+					{
+						continue;
+					}
+					else
+					{
+						m_ListBox.InsertString(-1, str);
+					}
+				}
+			}
+		}
+		else if ((pNMLV->uOldState & 0x2000) && (pNMLV->uNewState & 0x1000))
+		{
+			int cnt = m_ListControl.GetItemCount();
+			for (int i = 0; i < cnt; i++)
+			{
+				BOOL Check = m_ListControl.GetCheck(i);
+				if (FALSE == Check)
+				{
+					str = m_ListControl.GetItemText(i, 0);
+					UINT idx = m_ListBox.FindStringExact(-1, str);
+					if (idx != LB_ERR)
+					{
+						m_ListBox.DeleteString(idx);
+					}
+				}
+			}
+		}
+	}
+	*pResult = 0;
+}
+
+
+void CRPDataConverterDlg::OnLbnDblclkList()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	int CurSel = m_ListBox.GetCurSel();
+
+	if (CurSel > 0)
+	{
+		m_ListBox.DeleteString(CurSel);
+	}
+
 }
