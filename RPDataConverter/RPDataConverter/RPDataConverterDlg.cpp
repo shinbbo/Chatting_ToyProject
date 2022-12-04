@@ -283,15 +283,6 @@ void CRPDataConverterDlg::OnBnClickedButton2()
 	{
 		m_ListBox.GetText(i, str);
 		temp.Add(str);
-
-		if (temp[i] == str)
-		{
-			continue;
-		}
-		else
-		{
-			temp.Add(str);
-		}
 	}
 	
 	int SelDataCnt = temp.GetSize();
