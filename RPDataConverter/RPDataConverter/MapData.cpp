@@ -222,3 +222,16 @@ MapData* CMapFile::getMapData()
 {
 	return m_ppd;
 }
+
+
+void CMapFile::GridIdListDel()
+{
+	m_vGridID.clear();
+	std::vector<CString>().swap(m_vGridID);
+}
+
+void CMapFile::GridInfoDel()
+{
+	m_vGridInfo.clear();
+	std::vector<GridInfo>().swap(m_vGridInfo);
+}

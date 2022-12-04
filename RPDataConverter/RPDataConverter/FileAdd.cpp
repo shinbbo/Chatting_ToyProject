@@ -42,11 +42,11 @@ BOOL CFileMerge::FileMerge(TCHAR* szBuffer)
 	fp = m_pMapFile->getFilePoint();
 	CString filepath = szBuffer;
 
-	CString str;
-	str.Format(_T("%s"), szBuffer);
-	m_Edit.SetWindowTextW(str);
+	//CString str;
+	//str.Format(_T("%s"), szBuffer);
+	//m_Edit.SetWindowTextW(str);
 
-	_wfopen_s(&fp, filepath + /*L"\\merge.bin"*/str, L"wb");
+	_wfopen_s(&fp, filepath + L"\\merge.bin", L"wb");
 	if (NULL == fp)
 	{
 		return FALSE;

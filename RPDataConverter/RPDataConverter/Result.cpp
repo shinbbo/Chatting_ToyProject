@@ -30,6 +30,7 @@ void CResult::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CResult, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_MERGE, &CResult::OnBnClickedButtonMerge)
+	ON_BN_CLICKED(IDCANCEL, &CResult::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 BOOL CResult::OnInitDialog()
@@ -55,14 +56,11 @@ BOOL CResult::OnInitDialog()
 
 // CResult 메시지 처리기
 BOOL CResult::PrintResult()
-{
-	std::vector<CString> vGridID;
-	std::vector< GridInfo> vGridInfo;	
-
+{	
 	vGridID = m_pCMapFile->getGridIdList();
 	vGridInfo = m_pCMapFile->getGridInfo();
-	
-	CString str;
+
+	CString str, subStr;
 
 	for (int i = 0; i < vGridID.size(); i++)
 	{
@@ -74,7 +72,7 @@ BOOL CResult::PrintResult()
 		str.Format(_T("%d"), vGridInfo[i].iNumOfLane);
 		m_listctlResult.SetItemText(i, 2, str);
 	}
-
+	
 	return TRUE;
 }
 
@@ -84,4 +82,14 @@ void CResult::OnBnClickedButtonMerge()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CFileMerge dlg(m_pCMapFile);
 	dlg.DoModal();
+}
+
+
+void CResult::OnBnClickedCancel()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	m_pCMapFile->GridIdListDel();
+	m_pCMapFile->GridInfoDel();
+
+	CDialogEx::OnCancel();
 }

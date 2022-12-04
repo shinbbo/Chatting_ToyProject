@@ -271,28 +271,29 @@ void CRPDataConverterDlg::OnBnClickedButton2()
 
 	int nCount = m_ListControl.GetItemCount();
 	int DataCnt = m_ListBox.GetCount();
+
 	if (DataCnt <= 0)
 	{
 		AfxMessageBox(_T("데이터가 없습니다."));
 	}
+
+	
 	
 	for (int i = 0; i < DataCnt; i++)
 	{
 		m_ListBox.GetText(i, str);
 		temp.Add(str);
-	}
 
-	/*
-	for (int i = 0; i < nCount; i++)
-	{
-		BOOL Check = m_ListControl.GetCheck(i);
-		if (TRUE == Check)
+		if (temp[i] == str)
 		{
-			str = m_ListControl.GetItemText(i, 0);
+			continue;
+		}
+		else
+		{
 			temp.Add(str);
 		}
-	}*/
-
+	}
+	
 	int SelDataCnt = temp.GetSize();
 	m_pMapFile->setGridCnt(SelDataCnt);
 
@@ -393,10 +394,21 @@ void CRPDataConverterDlg::OnLbnDblclkList()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	int CurSel = m_ListBox.GetCurSel();
+	int dataCnt = m_ListControl.GetItemCount();
+	CString str, subStr;
 
-	if (CurSel > 0)
+	if (CurSel >= 0)
 	{
+		m_ListBox.GetText(CurSel, str);
 		m_ListBox.DeleteString(CurSel);
-	}
 
+		for (int i = 0; i < dataCnt; i++)
+		{
+			subStr = m_ListControl.GetItemText(i, 0);
+			if (str == subStr)
+			{
+				m_ListControl.SetCheck(i, FALSE);
+			}
+		}
+	}
 }

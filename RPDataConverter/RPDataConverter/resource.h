@@ -17,7 +17,6 @@
 #define IDC_BUTTON_MERGE                1011
 #define IDC_BUTTON_SAVE                 1012
 #define IDC_EDIT_SAVEPATH               1013
-#define IDC_EDIT2                       1019
 #define IDC_LIST3                       1021
 
 // Next default values for new objects

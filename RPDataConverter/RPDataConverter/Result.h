@@ -28,6 +28,10 @@ public:
 private:
 	CMapFile* m_pCMapFile;
 	CListCtrl m_listctlResult;
+
+	std::vector<CString> vGridID;
+	std::vector< GridInfo> vGridInfo;
 public:
 	afx_msg void OnBnClickedButtonMerge();
+	afx_msg void OnBnClickedCancel();
 };

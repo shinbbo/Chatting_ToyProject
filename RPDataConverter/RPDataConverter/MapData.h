@@ -13,12 +13,15 @@ public:
 	void FileOpen(CString strPathName1, CString path, int i);
 	void setGridCnt(int cnt);
 	void pMapDataRead(FILE* fp, int num);
-	//void MapDataRead(FILE* fp);
+	void GridIdListDel();
+	void GridInfoDel();
+
 
 	std::vector<CString> getGridIdList();
 	std::vector< GridInfo> getGridInfo();
 	std::vector<CString> getFilePath();
 	std::vector<int> getFileSize();
+
 	FILE* getFilePoint();
 	MapData* getMapData();
 	
