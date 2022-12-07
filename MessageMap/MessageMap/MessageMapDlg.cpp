@@ -6,6 +6,7 @@
 #include "framework.h"
 #include "MessageMap.h"
 #include "MessageMapDlg.h"
+#include "ChildDlg.h"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
@@ -60,6 +61,7 @@ void CMessageMapDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT1, m_Edit);
+	DDX_Control(pDX, IDC_LIST1, m_ListBox);
 }
 
 BEGIN_MESSAGE_MAP(CMessageMapDlg, CDialogEx)
@@ -68,7 +70,7 @@ BEGIN_MESSAGE_MAP(CMessageMapDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CMessageMapDlg::OnBnClickedButton)
 	ON_BN_CLICKED(IDC_BUTTON2, &CMessageMapDlg::OnBnClickedButton2)
-	ON_LBN_SELCHANGE(IDC_LIST1, &CMessageMapDlg::OnLbnSelchangeList1)
+	ON_MESSAGE(UM_MYMESSAGE, &CMessageMapDlg::OnUmMymessage)
 END_MESSAGE_MAP()
 
 
@@ -161,18 +163,28 @@ HCURSOR CMessageMapDlg::OnQueryDragIcon()
 void CMessageMapDlg::OnBnClickedButton()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	m_ChildDlg.Create(IDD_DIALOG1, this);
-	m_ChildDlg.ShowWindow(SW_SHOW);
+	if (NULL == m_pChildDlg)
+	{
+		m_pChildDlg = new CChildDlg(this);
+		m_pChildDlg->Create(IDD_DIALOG1, this);
+		m_pChildDlg->ShowWindow(SW_SHOW);
+	}
 }
 
 
 void CMessageMapDlg::OnBnClickedButton2()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
+	m_Edit.GetWindowTextW(str);
+	::SendMessage(m_pChildDlg->m_hWnd, UM_MYMESSAGE, 0, (LPARAM)&str);
 }
 
 
-void CMessageMapDlg::OnLbnSelchangeList1()
+
+afx_msg LRESULT CMessageMapDlg::OnUmMymessage(WPARAM wParam, LPARAM lParam)
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	MessageBox(_T("Receive Message"), _T("ParentDlg"), MB_OK);
+	m_ListBox.AddString(m_pChildDlg->strChild);
+	return 0;
 }

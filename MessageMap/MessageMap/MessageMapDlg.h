@@ -33,8 +33,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	CEdit m_Edit;
-	CChildDlg m_ChildDlg;
+	CChildDlg* m_pChildDlg;
+	CString str;
 	afx_msg void OnBnClickedButton();
 	afx_msg void OnBnClickedButton2();
-	afx_msg void OnLbnSelchangeList1();
+protected:
+	afx_msg LRESULT OnUmMymessage(WPARAM wParam, LPARAM lParam);
+public:
+	CListBox m_ListBox;
 };
