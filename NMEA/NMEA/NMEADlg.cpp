@@ -7,6 +7,7 @@
 #include "NMEA.h"
 #include "NMEADlg.h"
 #include "afxdialogex.h"
+#include <vector>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -67,6 +68,7 @@ BEGIN_MESSAGE_MAP(CNMEADlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_READ, &CNMEADlg::OnBnClickedButtonRead)
+	ON_BN_CLICKED(IDC_BUTTON_SAVE, &CNMEADlg::OnBnClickedButtonSave)
 END_MESSAGE_MAP()
 
 
@@ -163,8 +165,62 @@ void CNMEADlg::OnBnClickedButtonRead()
 	CString path = m_FileRead.FileDialog();
 	SetDlgItemText(IDC_EDIT1, path);
 
-	
-	m_FileRead.FileParse();
+	bool flag = m_FileRead.FileParse();
+	if (false == flag)
+	{
+		return;
+	}
 
+	std::vector<std::string> GNRMC = m_FileRead.getGNRMC();
+
+	for (int i = 0; i < GNRMC.size(); i++)
+	{
+		CString str = (CString)GNRMC[i].c_str();
+		m_ListBoxRead.AddString(str);
+	}
+
+
+	CreateHorizontalScroll();
 
 }
+
+
+void CNMEADlg::OnBnClickedButtonSave()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString path = m_FileRead.FileSaveDialog();
+	SetDlgItemText(IDC_EDIT2, path);
+
+	bool flag = m_FileRead.FileWrite();
+	if (false == flag)
+	{
+		return;
+	}
+}
+
+
+//가로 스크롤 함수
+void CNMEADlg::CreateHorizontalScroll()
+{
+	CString str; CSize sz; int dx = 0;
+	CDC *pDC = m_ListBoxRead.GetDC();
+
+	for (int i = 0; i < m_ListBoxRead.GetCount(); i++)
+	{
+		m_ListBoxRead.GetText(i, str);
+		sz = pDC->GetTextExtent(str);
+
+		if (sz.cx > dx)
+			dx = sz.cx;
+	}
+	m_ListBoxRead.ReleaseDC(pDC);
+
+	if (m_ListBoxRead.GetHorizontalExtent() < dx)
+	{
+		m_ListBoxRead.SetHorizontalExtent(dx);
+		ASSERT(m_ListBoxRead.GetHorizontalExtent() == dx);
+	}
+}
+
+
+

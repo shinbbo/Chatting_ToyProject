@@ -39,7 +39,11 @@ public:
 
 private:
 	CFileRead m_FileRead;
+	CListBox m_ListBoxRead;
+
 
 public:
-	CListBox m_ListBoxRead;
+	void CreateHorizontalScroll();
+
+	afx_msg void OnBnClickedButtonSave();
 };

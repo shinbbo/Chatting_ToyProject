@@ -192,6 +192,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="NMEA.h" />
     <ClInclude Include="NMEADlg.h" />
+    <ClInclude Include="nmeaStruct.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />

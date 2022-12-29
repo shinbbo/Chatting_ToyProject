@@ -2,6 +2,7 @@
 #include "File.h"
 #include <string>
 #include <iostream>
+#include <sstream>
 
 
 #define MAX_PATH 256
@@ -10,7 +11,7 @@
 
 CFileRead::CFileRead()
 {
-
+	m_pstNmea = NULL;
 }
 
 CFileRead::~CFileRead()
@@ -24,6 +25,21 @@ CString CFileRead::FileDialog()
 	
 	TCHAR szFilter[] = _T("All Files(*.*)|*.*||");
 	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, szFilter);
+
+	if (IDOK == dlg.DoModal())
+	{
+		FilePathName = dlg.GetPathName();
+	}
+
+	return FilePathName;
+}
+
+
+CString CFileRead::FileSaveDialog()
+{
+
+	TCHAR szFilter[] = _T("All Files(*.*)|*.*||");
+	CFileDialog dlg(FALSE, NULL, NULL, OFN_OVERWRITEPROMPT, szFilter);
 
 	if (IDOK == dlg.DoModal())
 	{
@@ -67,21 +83,27 @@ char* CFileRead::FileOpen()
 }
 
 
-void CFileRead::FileParse()
+bool CFileRead::FileParse()
 {
 	int pos = 0;
-	char* pDoc = FileOpen();
+	int count;
 	std::string str;
+
+	char* pDoc = NULL;
+	pDoc = FileOpen();
+
 	if (NULL == pDoc)
 	{
-		return;
+		return false;
 	}
+
 	while (pos < size)
 	{
 		if ('$' == pDoc[pos])
 		{
 			pos++;
 			str += pDoc[pos];
+
 			while (pos < size)
 			{
 				pos++;
@@ -94,13 +116,12 @@ void CFileRead::FileParse()
 			
 			if ("GNRMC" == str)
 			{
-				str += pDoc[pos];
-				while (pDoc[pos] != '\n')
+				while ('\n' != pDoc[pos])
 				{
-					pos++;
 					str += pDoc[pos];
+					pos++;
 				}
-				std::cout << str << std::endl;
+				m_vGNRMC.push_back(str);
 			}
 			else
 			{
@@ -110,5 +131,82 @@ void CFileRead::FileParse()
 		pos++;
 	}
 
-	std::cout << "Á¾·á" << std::endl;
+	
+	int vecSize = m_vGNRMC.size();
+
+	m_pstNmea = (NMEA*)malloc(sizeof(NMEA) * vecSize);
+	memset(m_pstNmea, 0, sizeof(NMEA) * vecSize);
+
+	for (int i = 0; i < vecSize; i++)
+	{
+		std::string a = m_vGNRMC[i];
+		std::string temp = "";
+		count = 0;
+
+		for (int j = 0; j < a.length(); j++)
+		{
+			temp += a[j];
+			if (a[j] == ',')
+			{
+				count++;
+
+				if (4 == count)
+				{
+					std::stringstream ssdouble(temp);
+					ssdouble >> m_pstNmea[i].lon;
+				}
+				else if (6 == count)
+				{
+					std::stringstream ssdouble(temp);
+					ssdouble >> m_pstNmea[i].lat;
+				}
+
+				temp = "";
+			}
+		}
+	}
+
+	return true;
 }
+
+
+std::vector<std::string> CFileRead::getGNRMC()
+{
+	return m_vGNRMC;
+}
+
+
+NMEA* CFileRead::getNmeaLonLat()
+{
+	return m_pstNmea;
+}
+
+
+bool CFileRead::FileWrite()
+{
+	int size = m_vGNRMC.size();
+
+	_wfopen_s(&fp, FilePathName, L"w");
+
+	if (NULL == fp)
+	{
+		MessageBox(NULL, _T("File Save Fail"), _T("ERROR"), MB_OK);
+		return false;
+	}
+
+	//m_pstNmea = (NMEA*)malloc(sizeof(NMEA) * size);
+	//memset(m_pstNmea, 0, sizeof(NMEA) * size);
+
+	for (int i = 0; i < size; i++)
+	{
+		fwrite(&m_pstNmea[i].lon, sizeof(double), 1, fp);
+		fwrite(&m_pstNmea[i].lat, sizeof(double), 1, fp);
+	}
+
+	fclose(fp);
+
+	return true;
+}
+
+
+

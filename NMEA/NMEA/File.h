@@ -1,4 +1,5 @@
 #pragma once
+#include "nmeaStruct.h"
 #include <atlstr.h>
 #include <vector>
 
@@ -13,11 +14,18 @@ public:
 public:
 	char* FileOpen();
 	CString FileDialog();
-	void FileParse();
+	CString FileSaveDialog();
+	bool FileParse();
+	std::vector<std::string> getGNRMC();
+	NMEA* getNmeaLonLat();
+	bool FileWrite();
+	
 
 private:
 	FILE* fp;
 	CString FilePathName;
 	int size;
-	std::vector<char> m_vSave;
+	std::vector<std::string> m_vGNRMC;
+	std::vector<NMEA> m_vstNmea;
+	NMEA* m_pstNmea;
 };
