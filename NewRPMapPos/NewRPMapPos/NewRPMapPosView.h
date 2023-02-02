@@ -41,7 +41,9 @@ protected:
 
 
 private:
-	CFileRead m_pCFileRead;
+	CFileRead* m_pCFileRead;
+	CRect m_Rect;
+	POINT CenterDC;
 
 // 생성된 메시지 맵 함수
 protected:

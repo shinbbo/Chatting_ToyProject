@@ -35,7 +35,11 @@ END_MESSAGE_MAP()
 CNewRPMapPosView::CNewRPMapPosView() noexcept
 {
 	// TODO: 여기에 생성 코드를 추가합니다.
+	CenterDC.x = CenterDC.y = 0;
 
+	m_Rect.SetRect(0, 0, (long)(::GetSystemMetrics(SM_CXFULLSCREEN)*1.5), (long)(::GetSystemMetrics(SM_CYFULLSCREEN)*1.5));
+	CenterDC.x = ((m_Rect.right - m_Rect.left) / 2);
+	CenterDC.y = ((m_Rect.bottom - m_Rect.top) / 2);
 }
 
 CNewRPMapPosView::~CNewRPMapPosView()
@@ -98,13 +102,14 @@ void CNewRPMapPosView::Dump(CDumpContext& dc) const
 	CView::Dump(dc);
 }
 
-
-//CNewRPMapPosDoc* CNewRPMapPosView::GetDocument() const // 디버그되지 않은 버전은 인라인으로 지정됩니다.
-//{
-//	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CNewRPMapPosDoc)));
-//	return (CNewRPMapPosDoc*)m_pDocument;
-//}
+/*
+CNewRPMapPosDoc* CNewRPMapPosView::GetDocument() const // 디버그되지 않은 버전은 인라인으로 지정됩니다.
+{
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CNewRPMapPosDoc)));
+	return (CNewRPMapPosDoc*)m_pDocument;
+}*/
 #endif //_DEBUG
+
 
 CMainFrame* CNewRPMapPosView::GetMainFrm() const // 디버그되지 않은 버전은 인라인으로 지정됩니다.
 {
@@ -124,7 +129,19 @@ void CNewRPMapPosView::OnDraw(CDC* pDC)
 
 	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
 
-	std::vector< LaneDataVertex> LaneDataVertex = m_pCFileRead.getLaneDataVertex();
+	if (false == pDoc->LoadCheck())
+	{
+		return;
+	}
+
+	m_pCFileRead = pDoc->getInterface();
+
+
+	std::vector< LaneDataVertex> LaneDataVertex = m_pCFileRead->getLaneDataVertex();
 	int size = LaneDataVertex.size();
 
+	for (int i = 0; i < size; i++)
+	{
+
+	}
 }

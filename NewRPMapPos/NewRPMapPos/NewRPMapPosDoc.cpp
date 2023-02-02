@@ -34,7 +34,7 @@ END_MESSAGE_MAP()
 CNewRPMapPosDoc::CNewRPMapPosDoc() noexcept
 {
 	// TODO: 여기에 일회성 생성 코드를 추가합니다.
-
+	m_pCFileRead = NULL;
 }
 
 CNewRPMapPosDoc::~CNewRPMapPosDoc()
@@ -142,11 +142,37 @@ void CNewRPMapPosDoc::Dump(CDumpContext& dc) const
 void CNewRPMapPosDoc::OnFileOpen()
 {
 	
-	if (false == m_CFileRead.FileDialog())
+	CMainFrame* pMain = (CMainFrame*)AfxGetMainWnd(); // (CMainFrame*)AfxGetMainWnd() : AfxGet~()를 CMainFrame이 가지고있다.
+
+	m_pCFileRead = new CFileRead;
+	if (false == m_pCFileRead->FileDialog())
 	{
 		return;
 	}
-	
-	
+	else
+	{
+		CNewRPMapPosView* pMView = (CNewRPMapPosView *)pMain->GetActiveView();	// 프레임창에 연결된 활성뷰에대한 포인터 가져옴	
+		pMain->SetActiveView(pMView);	// 분할 윈도우로 나누었을 경우 특정 순간에 현재 뷰에서 다른 뷰를 활성화(포커스) 해주어야 할 경우
+		pMView->Invalidate();			// 화면전체를 재표시 / 강제로 WM_PAINT메시지 발생->WM_PAINT메시지는 OnDraw()함수를 호출하여 화면을 다시 그리는 역할
+	}
+}
 
+
+
+bool CNewRPMapPosDoc::LoadCheck()
+{
+	if (NULL != m_pCFileRead)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+CFileRead* CNewRPMapPosDoc::getInterface()
+{
+	return m_pCFileRead;
 }

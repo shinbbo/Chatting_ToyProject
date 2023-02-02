@@ -19,6 +19,8 @@ public:
 
 // 작업입니다.
 public:
+	bool LoadCheck();
+	CFileRead* getInterface();
 
 // 재정의입니다.
 public:
@@ -38,7 +40,7 @@ public:
 #endif
 
 protected:
-	CFileRead m_CFileRead;
+	CFileRead* m_pCFileRead;
 
 // 생성된 메시지 맵 함수
 protected:
