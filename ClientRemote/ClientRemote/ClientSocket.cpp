@@ -3,8 +3,7 @@
 
 CClientSocket::CClientSocket()
 {
-	fp = NULL;
-	m_pEventThread = NULL;
+
 }
 
 CClientSocket::~CClientSocket()
@@ -62,7 +61,6 @@ void CClientSocket::DataSend()
 	{
 		return;
 	}
-
 	//Image.png 전체 데이터 크기
 	int iDataLen = 0;
 
@@ -95,7 +93,7 @@ void CClientSocket::DataSend()
 	return;
 }
 
-int CClientSocket::Send(char* str)
+int CClientSocket::Send(const char* str)
 {
 	return ::send(m_ClientSocket, str, sizeof(str), 0);
 }
@@ -107,6 +105,9 @@ SOCKET CClientSocket::getSocket()
 
 void CClientSocket::SocketClose()
 {
+	const char* buf = "exit";
+	::send(m_ClientSocket, buf, sizeof(buf), 0);
+
 	closesocket(m_ClientSocket);
 	WSACleanup();
 	AfxGetMainWnd()->PostMessageW(WM_COMMAND, ID_APP_EXIT, 0);

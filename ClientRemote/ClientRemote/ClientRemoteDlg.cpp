@@ -68,6 +68,7 @@ BEGIN_MESSAGE_MAP(CClientRemoteDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_CONNECT, &CClientRemoteDlg::OnBnClickedButtonConnect)
 	ON_BN_CLICKED(IDC_BUTTON_SCREEN, &CClientRemoteDlg::OnBnClickedButtonScreen)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -195,13 +196,15 @@ void CClientRemoteDlg::DataThreadClose()
 {
 	if (NULL != m_pDataThread)
 	{
+		m_eDataThreadWorkType = ThreadWorking::STOP;
+		Sleep(100);
+
 		m_pDataThread->SuspendThread();
 		DWORD dwResult;
 		GetExitCodeThread(m_pDataThread->m_hThread, &dwResult);
 
 		delete m_pDataThread;
 		m_pDataThread = NULL;
-		m_eDataThreadWorkType = ThreadWorking::STOP;
 	}
 }
 
@@ -245,8 +248,8 @@ UINT CClientRemoteDlg::EventRunThread(LPVOID pParm)
 		if (0 == (strcmp(g_pDlg->m_stRemoteEvent.szBuf, "exit")))
 		{
 			g_pDlg->m_ClientSocket.SocketClose();
-			g_pDlg->EventThreadClose();
-			g_pDlg->DataThreadClose();
+			g_pDlg->m_eEventThreadWorkType = ThreadWorking::STOP;
+			break;
 		}
 
 		if (TRUE == g_pDlg->m_stRemoteEvent.stMouseEvent.bFlag)
@@ -269,13 +272,15 @@ void CClientRemoteDlg::EventThreadClose()
 {
 	if (NULL != m_pEventThread)
 	{
+		m_eEventThreadWorkType = ThreadWorking::STOP;
+		Sleep(100);
+
 		m_pEventThread->SuspendThread();
 		DWORD dwResult;
 		GetExitCodeThread(m_pEventThread->m_hThread, &dwResult);
 
 		delete m_pEventThread;
 		m_pEventThread = NULL;
-		m_eEventThreadWorkType = ThreadWorking::STOP;
 	}
 }
 
@@ -406,7 +411,7 @@ void CClientRemoteDlg::OnBnClickedButtonConnect()
 void CClientRemoteDlg::OnBnClickedButtonScreen()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	char szBuf[32] = "연결중";
+	const char* szBuf = "연결중";
 	int iSend = m_ClientSocket.Send(szBuf);
 	if (SOCKET_ERROR == iSend)
 	{
@@ -415,4 +420,14 @@ void CClientRemoteDlg::OnBnClickedButtonScreen()
 
 	DataThreadFunc();
 	EventThreadFunc();
+}
+
+
+void CClientRemoteDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
+	EventThreadClose();
+	DataThreadClose();
 }

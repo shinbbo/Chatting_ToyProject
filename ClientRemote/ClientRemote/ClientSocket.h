@@ -13,7 +13,7 @@ public:
 
 	bool SocketConnect(CString _ip);
 	void DataSend();
-	int Send(char* str);
+	int Send(const char* str);
 	SOCKET getSocket();
 	void SocketClose();
 

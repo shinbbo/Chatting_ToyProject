@@ -67,4 +67,5 @@ private:
 public:
 	afx_msg void OnBnClickedButtonConnect();
 	afx_msg void OnBnClickedButtonScreen();
+	afx_msg void OnDestroy();
 };

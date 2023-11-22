@@ -23,7 +23,7 @@
     <ProjectGuid>{2D264198-1F4B-457A-9158-574DCED7E9A2}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <RootNamespace>ClientRemote</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
