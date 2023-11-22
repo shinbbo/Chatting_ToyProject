@@ -56,6 +56,7 @@ public:
 private:
 	CServerSocket* m_pSeverSocket;
 	SOCKET m_Socket;
+	CImage m_Image;
 
 	RemoteEvent m_stRemoteEvent;
 	eMouseClickEvent m_eMouseClickEvent;

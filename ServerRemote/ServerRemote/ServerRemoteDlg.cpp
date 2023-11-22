@@ -268,13 +268,15 @@ void CServerRemoteDlg::EventThreadClose()
 {
 	if (NULL != m_pEventThread)
 	{
+		m_eEventThreadWorkType = EventThreadWorking::EVENT_STOP;
+		Sleep(100);
+
 		m_pEventThread->SuspendThread();
 		DWORD dwResult;
 		GetExitCodeThread(m_pEventThread->m_hThread, &dwResult);
 
 		delete m_pEventThread;
 		m_pEventThread = NULL;
-		m_eEventThreadWorkType = EventThreadWorking::EVENT_STOP;
 	}
 }
 
@@ -301,13 +303,12 @@ void CServerRemoteDlg::ShowScreen()
 	CRect rcPicBox;
 	pPicBox->GetClientRect(rcPicBox);
 
-	static CImage Image;
-	if (!Image.IsNull())
+	if (!m_Image.IsNull())
 	{
-		Image.Destroy();
+		m_Image.Destroy();
 	}
 
-	HRESULT hResult = Image.Load(_T("Image.png"));
+	HRESULT hResult = m_Image.Load(_T("Image.png"));
 	if (FAILED(hResult))
 	{
 		CString str = _T("ERROR : Failed to load");
@@ -315,12 +316,11 @@ void CServerRemoteDlg::ShowScreen()
 		TRACE(str);
 	}
 
-	int test = ::SetStretchBltMode(dc->m_hDC, HALFTONE);
-	TRACE("SetStretchBltMode : %d\n", test);
-	Image.StretchBlt(dc->m_hDC, 0, 0, rcPicBox.Width(), rcPicBox.Height(), SRCCOPY);
+	::SetStretchBltMode(dc->m_hDC, HALFTONE);
+	m_Image.StretchBlt(dc->m_hDC, 0, 0, rcPicBox.Width(), rcPicBox.Height(), SRCCOPY);
 
 	ReleaseDC(dc);
-	Image.Destroy();
+	m_Image.Destroy();
 }
 
 void CServerRemoteDlg::OnSize(UINT nType, int cx, int cy)
@@ -334,8 +334,8 @@ void CServerRemoteDlg::OnSize(UINT nType, int cx, int cy)
 		return;
 	}
 
-	CRect rectCtl;
 	//PictureControl
+	CRect rectCtl;
 	pCtl->GetWindowRect(&rectCtl);
 	ScreenToClient(&rectCtl);
 	pCtl->MoveWindow(rectCtl.left, rectCtl.top, cx - 2 * rectCtl.left, cy - rectCtl.top - rectCtl.left, TRUE);
@@ -345,7 +345,7 @@ void CServerRemoteDlg::OnSize(UINT nType, int cx, int cy)
 	GetClientRect(rcEdit);
 	GetDlgItem(IDC_EDIT_TIME)->GetWindowRect(EditRect);
 	ScreenToClient(EditRect);
-	GetDlgItem(IDC_EDIT_TIME)->SetWindowPos(NULL, rcEdit.Width() / 2, rcEdit.top + 7, 0, 0, SWP_NOSIZE);
+	GetDlgItem(IDC_EDIT_TIME)->SetWindowPos(NULL, rcEdit.Width() / 2, rcEdit.top + 10, 0, 0, SWP_NOSIZE);
 
 	//Static
 	CRect rcStatic, StaticRect;

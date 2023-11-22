@@ -47,7 +47,6 @@ SOCKET CServerSocket::ConnectSocket()
 	SOCKADDR_IN clientAddr;
 	memset(&clientAddr, 0, sizeof(clientAddr));
 	int iAddrLen = sizeof(clientAddr);
-	char szBuffer[128] = { 0, };
 	int iReceive = 0;
 
 	if ((hClient = ::accept(m_ServerSocket, (SOCKADDR*)&clientAddr, &iAddrLen)) == INVALID_SOCKET)
@@ -94,7 +93,6 @@ UINT CServerSocket::DataRunThread(LPVOID pParm)
 	while (ThreadWorking::RUNNING == g_pDlg->m_eDataThreadWorkType)
 	{
 		bool bFlag = g_pDlg->DataRecv();
-		TRACE("DataRecv : %d\n", bFlag);
 		if (true == bFlag)
 		{
 			pMainDlg->ShowScreen();
@@ -108,34 +106,36 @@ void CServerSocket::DataThreadClose()
 {
 	if (NULL != m_pDataThread)
 	{
+		m_eDataThreadWorkType = ThreadWorking::STOP;
+		Sleep(100);
+
 		m_pDataThread->SuspendThread();
 		DWORD dwResult;
 		GetExitCodeThread(m_pDataThread->m_hThread, &dwResult);
 
 		delete m_pDataThread;
 		m_pDataThread = NULL;
-		m_eDataThreadWorkType = ThreadWorking::STOP;
 	}
 }
 
 bool CServerSocket::DataRecv()
 {
-	int iDataLen = 0;
-	int iRecv = ::recv(hClient, (char*)&iDataLen, sizeof(iDataLen), 0);
-	if (SOCKET_ERROR == iRecv || 0 >= iDataLen)
-	{
-		TRACE("iDataLen : %d\n", iDataLen);
-		return false;
-	}
-
 	fp = fopen("Image.png", "wb");
 	if (NULL == fp)
 	{
 		return false;
 	}
 
+	int iDataLen = 0;
+	int iRecv = ::recv(hClient, (char*)&iDataLen, sizeof(iDataLen), 0);
+	if (SOCKET_ERROR == iRecv)
+	{
+		TRACE("iDataLen : %d\n", iDataLen);
+		return false;
+	}
+
 	int iTotalBytes = 0;
-	char szBuf[4096] = { 0 };
+	char szBuf[4096] = { 0, };
 
 	while (iTotalBytes < iDataLen)
 	{
@@ -158,21 +158,24 @@ bool CServerSocket::DataRecv()
 
 int CServerSocket::Recv(SOCKET s)
 {
-	char buf[32] = { 0 };
+	char szbuf[32] = { 0, };
 
-	return ::recv(s, buf, sizeof(buf), 0);
+	return ::recv(s, szbuf, sizeof(szbuf), 0);
 }
 
 
 void CServerSocket::SocketClose(RemoteEvent _RemoteEvent)
 {
 	::send(hClient, (char*)&_RemoteEvent, sizeof(_RemoteEvent), 0);
-	shutdown(hClient, SD_BOTH);
 
-	char buf[256];
+	char buf[256] = { 0, };
 	int iRecv = ::recv(hClient, buf, sizeof(buf), 0);
+	if (0 < iRecv)
+	{
+		shutdown(hClient, SD_BOTH);
+		closesocket(hClient);
+	}
 
-	closesocket(hClient);
 	closesocket(m_ServerSocket);
 	WSACleanup();
 }
